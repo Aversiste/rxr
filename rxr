@@ -1,0 +1,65 @@
+#!/bin/sh
+
+set -e
+
+PROGNAME="`basename $0`"
+VERSION='v1.0'
+
+_PATH_MAN_CONF=/etc/man.conf
+
+usage() {
+        echo "usage: $PROGNAME [-d] [-s section] utility"
+}
+
+version() {
+        echo "$PROGNAME $VERSION"
+}
+
+section="_default"
+
+while getopts "ds:" opt;do
+	case $opt in
+		d) set -x;;
+		s) section="$OPTARG";;
+		*) usage; exit 1;;	# NOTREACHED
+		:) echo "$PROGNAME: option requires an argument -- $OPTARG";
+		   usage; exit 1;;	# NOTREACHED
+		?) echo "$PROGNAME: unkown option -- $OPTARG";
+		   usage; exit 1;;	# NOTREACHED
+	esac
+done
+shift $(( $OPTIND -1 ))
+
+if [ -z "$1" ]; then
+	usage
+	exit 1
+else
+	utility="$1"
+	shift
+fi
+
+if [ $# -ge 1 ]; then
+	echo "$PROGNAME: invalid trailing chars -- $@"
+	usage
+	exit 1
+fi
+
+paths=`cat $_PATH_MAN_CONF | grep "^$section" | cut -f2-`
+subdirs=`cat $_PATH_MAN_CONF | grep "^_subdir" | cut -f2-`
+
+# List every valid directory
+for dir in $paths; do
+	if [ "$dir" != "${dir%/}" ] ;then
+		for subdir in $subdirs; do
+			[ -d $dir$subdir ] && echo $dir$subdir
+		done
+	else
+		[ -d $dir ] && echo $dir
+	fi
+done | while read; do
+	for file in `ls $REPLY`; do
+		if grep ".Xr $utility" $REPLY/$file > /dev/null; then
+			echo $file | tr '.' ' '
+		fi
+	done
+done
