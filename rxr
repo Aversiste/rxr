@@ -62,6 +62,12 @@ fi
 paths=`cat $_PATH_MAN_CONF | grep "^$section" | cut -f2-`
 subdirs=`cat $_PATH_MAN_CONF | grep "^_subdir" | cut -f2-`
 
+if [ "$PROGNAME" = "renv" ]; then
+	target=".Ev"
+else
+	target=".Xr"
+fi
+
 # List every valid directory
 for dir in $paths; do
 	if [ "$dir" != "${dir%/}" ] ;then
@@ -73,7 +79,7 @@ for dir in $paths; do
 	fi
 done | while read; do
 	for file in `ls $REPLY`; do
-		if grep ".Xr $utility" $REPLY/$file > /dev/null; then
+		if grep "$target $utility" $REPLY/$file > /dev/null; then
 			echo $file | tr '.' ' '
 		fi
 	done
