@@ -32,15 +32,15 @@ version() {
 
 section="_default"
 
-while getopts "ds:" opt;do
+while getopts ":ds:" opt;do
 	case $opt in
 		d) set -x;;
 		s) section="$OPTARG";;
-		*) usage; exit 1;;	# NOTREACHED
 		:) echo "$PROGNAME: option requires an argument -- $OPTARG";
 		   usage; exit 1;;	# NOTREACHED
 		?) echo "$PROGNAME: unkown option -- $OPTARG";
 		   usage; exit 1;;	# NOTREACHED
+		*) usage; exit 1;;	# NOTREACHED
 	esac
 done
 shift $(( $OPTIND -1 ))
