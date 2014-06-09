@@ -20,8 +20,6 @@ set -e
 PROGNAME="`basename $0`"
 VERSION='v1.0'
 
-_PATH_MAN_CONF=/etc/man.conf
-
 usage() {
         echo "usage: $PROGNAME [-d] [-s section] utility"
 }
@@ -31,6 +29,7 @@ version() {
 }
 
 section="_default"
+target="Xr"
 
 while getopts ":ds:" opt;do
 	case $opt in
@@ -59,28 +58,10 @@ if [ $# -ge 1 ]; then
 	exit 1
 fi
 
-paths=`cat $_PATH_MAN_CONF | grep "^$section" | cut -f2-`
-subdirs=`cat $_PATH_MAN_CONF | grep "^_subdir" | cut -f2-`
-
 if [ "$PROGNAME" = "renv" ]; then
-	target=".Ev"
-else
-	target=".Xr"
+	target="Ev"
 fi
 
-# List every valid directory
-for dir in $paths; do
-	if [ "$dir" != "${dir%/}" ] ;then
-		for subdir in $subdirs; do
-			[ -d $dir$subdir ] && echo $dir$subdir
-		done
-	else
-		[ -d $dir ] && echo $dir
-	fi
-done | while read; do
-	for file in `ls $REPLY`; do
-		if grep "$target $utility" $REPLY/$file > /dev/null; then
-			echo $file | tr '.' ' '
-		fi
-	done
-done
+set -u
+
+apropos $target=$utility
